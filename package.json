@@ -1,0 +1,15 @@
+{
+  "name": "ai-data-analyst",
+  "version": "1.0.0",
+  "description": "AI-powered CSV analysis tool — Claude API + Chart.js + PapaParse",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "author": "Cenred (Cj)",
+  "license": "MIT"
+}

@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Data Analyst Assistant — Cenred AI</title>
+  <meta name="description" content="Upload any CSV and instantly receive AI-powered insights, charts, and a conversational interface to ask questions about your data." />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #131a32;
+      --card: #161e3a;
+      --card-hover: #1c2647;
+      --border: #25305a;
+      --text: #e7ecff;
+      --text-dim: #9aa6cf;
+      --accent: #5b8cff;
+      --accent-hover: #7aa2ff;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 0%, rgba(91, 140, 255, 0.12), transparent 50%),
+                  radial-gradient(circle at 80% 100%, rgba(52, 211, 153, 0.08), transparent 50%),
+                  var(--bg);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    header.app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #34d399);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+    }
+
+    .brand-name { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .brand-sub { font-size: 12px; color: var(--text-dim); }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4.5vw, 44px);
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff, #9aa6cf);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-dim);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2::before {
+      content: "";
+      width: 4px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* Upload zone */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(91, 140, 255, 0.03);
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(91, 140, 255, 0.08);
+    }
+
+    .dropzone.dragover { transform: scale(1.01); }
+
+    .dropzone-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.7;
+    }
+
+    .dropzone-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .dropzone-sub {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .dropzone input[type=file] { display: none; }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      font-family: inherit;
+    }
+
+    .btn:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    /* Status / errors */
+    .status {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin: 12px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status.error {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    .status.success {
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      color: var(--success);
+    }
+
+    .status.info {
+      background: rgba(91, 140, 255, 0.08);
+      border: 1px solid rgba(91, 140, 255, 0.25);
+      color: var(--accent);
+    }
+
+    /* Preview table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    table.preview {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table.preview th, table.preview td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.preview th {
+      background: var(--bg-soft);
+      font-weight: 600;
+      color: var(--text-dim);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    table.preview tr:last-child td { border-bottom: none; }
+
+    /* Stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      border-radius: 10px;
+    }
+
+    .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 22px; font-weight: 600; margin-top: 4px; }
+
+    /* Summary card */
+    .summary-text {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* Charts grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .chart-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .chart-canvas-wrap {
+      position: relative;
+      height: 280px;
+    }
+
+    /* Chat */
+    .chat-window {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 14px;
+      min-height: 140px;
+    }
+
+    .chat-empty {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      margin: auto 0;
+    }
+
+    .msg {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+    }
+
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .msg.user .msg-avatar { background: var(--accent); color: white; }
+    .msg.assistant .msg-avatar { background: linear-gradient(135deg, #5b8cff, #34d399); color: white; }
+
+    .msg-bubble {
+      background: var(--card);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .msg.user .msg-bubble {
+      background: var(--accent);
+      color: white;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .chip {
+      display: inline-block;
+      background: rgba(91, 140, 255, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(91, 140, 255, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      margin: 2px 4px 2px 0;
+    }
+
+    .chip:hover { background: rgba(91, 140, 255, 0.2); }
+
+    .suggestions {
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* Loading */
+    .loader {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .typing {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px 0;
+    }
+
+    .typing span {
+      width: 7px;
+      height: 7px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .hidden { display: none !important; }
+
+    footer {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      margin-top: 40px;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px 12px 40px; }
+      .card { padding: 20px 16px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .msg { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">CJ</div>
+        <div>
+          <div class="brand-name">Cenred AI</div>
+          <div class="brand-sub">AI Data Analyst Assistant</div>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="https://cenredai.bizguro.net" target="_blank" rel="noopener">Portfolio</a>
+    </header>
+
+    <section class="hero">
+      <h1>Turn any CSV into instant insights</h1>
+      <p>Upload your data and an AI analyst returns an executive summary, auto-generated charts, and a chat interface to dig deeper — in seconds.</p>
+    </section>
+
+    <!-- Upload zone -->
+    <section class="card" id="uploadCard">
+      <h2>1. Upload your data</h2>
+      <label for="fileInput" class="dropzone" id="dropzone">
+        <div class="dropzone-icon">&#128202;</div>
+        <div class="dropzone-title">Drop a CSV file here</div>
+        <div class="dropzone-sub">or click to browse — up to 5MB, .csv format</div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="browseBtn">Choose file</button>
+          <button type="button" class="btn btn-ghost" id="sampleBtn">Try with sample data</button>
+        </div>
+        <input type="file" id="fileInput" accept=".csv,text/csv" />
+      </label>
+      <div id="uploadStatus"></div>
+    </section>
+
+    <!-- Data preview -->
+    <section class="card hidden" id="previewCard">
+      <h2>2. Data preview</h2>
+      <div class="stats" id="statsGrid"></div>
+      <div class="table-wrap">
+        <table class="preview" id="previewTable"></table>
+      </div>
+    </section>
+
+    <!-- Executive summary -->
+    <section class="card hidden" id="summaryCard">
+      <h2>3. Executive summary</h2>
+      <div class="summary-text" id="summaryText"></div>
+    </section>
+
+    <!-- Charts -->
+    <section class="card hidden" id="chartsCard">
+      <h2>4. Visualizations</h2>
+      <div class="charts-grid" id="chartsGrid"></div>
+    </section>
+
+    <!-- Chat -->
+    <section class="card hidden" id="chatCard">
+      <h2>5. Ask questions about your data</h2>
+      <div class="suggestions" id="suggestions"></div>
+      <div class="chat-window" id="chatWindow">
+        <div class="chat-empty" id="chatEmpty">Ask a question to start the conversation.</div>
+      </div>
+      <form class="chat-input-row" id="chatForm" autocomplete="off">
+        <input type="text" class="chat-input" id="chatInput" placeholder="e.g. Which product had the highest revenue?" disabled />
+        <button type="submit" class="btn" id="chatSendBtn" disabled>Send</button>
+      </form>
+    </section>
+
+    <footer>
+      Built by <a href="https://cenredai.bizguro.net" target="_blank" rel="noopener">Cenred (Cj)</a>
+      &nbsp;&middot;&nbsp; Powered by Claude &nbsp;&middot;&nbsp; <a href="https://github.com" target="_blank" rel="noopener">View source</a>
+    </footer>
+  </div>
+
+  <script>
+    // ============================================================
+    // AI Data Analyst Assistant — frontend
+    // ============================================================
+
+    const API_ENDPOINT = '/.netlify/functions/chat';
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const MAX_SAMPLE_ROWS = 50;
+    const SAMPLE_DATA_PATH = 'data/sample-ecommerce.csv';
+
+    // Application state
+    const state = {
+      rawData: null,        // full parsed array of objects
+      columns: [],          // column metadata
+      summary: null,        // statistical summary sent to Claude
+      chatHistory: [],      // [{role, content}]
+      charts: [],           // active Chart.js instances
+      isAnalyzing: false,
+      isChatting: false,
+    };
+
+    // ============================================================
+    // DOM helpers
+    // ============================================================
+    const $ = (id) => document.getElementById(id);
+
+    function showCard(id) { $(id).classList.remove('hidden'); }
+    function hideCard(id) { $(id).classList.add('hidden'); }
+
+    function setStatus(message, type = 'info') {
+      const el = $('uploadStatus');
+      if (!message) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // File handling — drag/drop and click
+    // ============================================================
+    const dropzone = $('dropzone');
+    const fileInput = $('fileInput');
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    });
+
+    $('browseBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    $('sampleBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await loadSampleData();
+    });
+
+    function handleFile(file) {
+      // Validate type
+      const isCsv = file.type === 'text/csv'
+        || file.type === 'application/vnd.ms-excel'
+        || file.name.toLowerCase().endsWith('.csv');
+      if (!isCsv) {
+        setStatus('Only .csv files are supported. Convert your file to CSV and try again.', 'error');
+        return;
+      }
+      // Validate size
+      if (file.size > MAX_FILE_SIZE) {
+        setStatus(`File is ${(file.size / 1024 / 1024).toFixed(1)}MB — max is 5MB.`, 'error');
+        return;
+      }
+      setStatus(`Parsing <strong>${escapeHtml(file.name)}</strong>...`, 'info');
+      parseCsv(file);
+    }
+
+    async function loadSampleData() {
+      setStatus('Loading sample e-commerce dataset...', 'info');
+      try {
+        const res = await fetch(SAMPLE_DATA_PATH);
+        if (!res.ok) throw new Error('Sample file not available');
+        const blob = await res.blob();
+        const file = new File([blob], 'sample-ecommerce.csv', { type: 'text/csv' });
+        handleFile(file);
+      } catch (err) {
+        setStatus(`Could not load sample data: ${escapeHtml(err.message)}`, 'error');
+      }
+    }
+
+    // ============================================================
+    // CSV parsing — PapaParse
+    // ============================================================
+    function parseCsv(file) {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: 'greedy',
+        dynamicTyping: true,
+        worker: false, // keep simple for CDN usage
+        complete: (results) => {
+          if (results.errors.length > 0) {
+            const firstErr = results.errors[0];
+            // Tolerate non-fatal errors but surface them
+            console.warn('CSV parse warnings:', results.errors);
+            if (firstErr.code === 'TooFewFields' || firstErr.code === 'TooManyFields') {
+              // these are typically non-fatal
+            }
+          }
+          if (!results.data || results.data.length === 0) {
+            setStatus('The CSV appears to be empty.', 'error');
+            return;
+          }
+          state.rawData = results.data;
+          setStatus(`Parsed <strong>${results.data.length.toLocaleString()}</strong> rows successfully.`, 'success');
+          renderPreview(results.data, results.meta.fields || Object.keys(results.data[0]));
+          analyzeData();
+        },
+        error: (err) => {
+          setStatus(`Parse error: ${escapeHtml(err.message)}`, 'error');
+        },
+      });
+    }
+
+    // ============================================================
+    // Data summarization — extracts metadata for Claude
+    // ============================================================
+    function detectColumnType(values) {
+      let numericCount = 0, dateCount = 0, totalNonNull = 0;
+      const datePattern = /^\d{4}-\d{2}-\d{2}|^\d{1,2}\/\d{1,2}\/\d{2,4}/;
+      for (const v of values) {
+        if (v === null || v === undefined || v === '') continue;
+        totalNonNull++;
+        if (typeof v === 'number' && !isNaN(v)) numericCount++;
+        else if (typeof v === 'string' && datePattern.test(v) && !isNaN(Date.parse(v))) dateCount++;
+      }
+      if (totalNonNull === 0) return 'empty';
+      if (numericCount / totalNonNull > 0.85) return 'number';
+      if (dateCount / totalNonNull > 0.85) return 'date';
+      return 'string';
+    }
+
+    function summarizeColumn(name, values) {
+      const type = detectColumnType(values);
+      const nonNull = values.filter(v => v !== null && v !== undefined && v !== '');
+      const summary = { name, type, nonNullCount: nonNull.length };
+
+      if (type === 'number') {
+        const nums = nonNull.filter(v => typeof v === 'number' && !isNaN(v));
+        if (nums.length > 0) {
+          const sum = nums.reduce((a, b) => a + b, 0);
+          summary.min = Math.min(...nums);
+          summary.max = Math.max(...nums);
+          summary.mean = sum / nums.length;
+          summary.sum = sum;
+        }
+      } else if (type === 'string') {
+        const counts = {};
+        for (const v of nonNull) {
+          const key = String(v);
+          counts[key] = (counts[key] || 0) + 1;
+        }
+        summary.uniqueCount = Object.keys(counts).length;
+        summary.topValues = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8)
+          .map(([value, count]) => ({ value, count }));
+      } else if (type === 'date') {
+        const dates = nonNull.map(v => new Date(v)).filter(d => !isNaN(d));
+        if (dates.length > 0) {
+          summary.minDate = new Date(Math.min(...dates)).toISOString().slice(0, 10);
+          summary.maxDate = new Date(Math.max(...dates)).toISOString().slice(0, 10);
+        }
+      }
+      return summary;
+    }
+
+    function summarizeData(rows) {
+      const fields = Object.keys(rows[0] || {});
+      const columnSummaries = fields.map(name => {
+        const values = rows.map(r => r[name]);
+        return summarizeColumn(name, values);
+      });
+      const sampleRows = rows.slice(0, MAX_SAMPLE_ROWS);
+      return {
+        rowCount: rows.length,
+        columnCount: fields.length,
+        columns: columnSummaries,
+        sampleRows,
+      };
+    }
+
+    // ============================================================
+    // Render preview table + stats
+    // ============================================================
+    function renderPreview(rows, fields) {
+      const previewRows = rows.slice(0, 10);
+      const table = $('previewTable');
+      const thead = `<thead><tr>${fields.map(f => `<th>${escapeHtml(f)}</th>`).join('')}</tr></thead>`;
+      const tbody = `<tbody>${previewRows.map(row =>
+        `<tr>${fields.map(f => `<td>${escapeHtml(row[f])}</td>`).join('')}</tr>`
+      ).join('')}</tbody>`;
+      table.innerHTML = thead + tbody;
+
+      // Stats grid
+      const summary = summarizeData(rows);
+      state.summary = summary;
+      const numericCols = summary.columns.filter(c => c.type === 'number').length;
+      const stats = [
+        { label: 'Rows', value: rows.length.toLocaleString() },
+        { label: 'Columns', value: fields.length },
+        { label: 'Numeric', value: numericCols },
+        { label: 'Categorical', value: summary.columns.filter(c => c.type === 'string').length },
+      ];
+      $('statsGrid').innerHTML = stats.map(s =>
+        `<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-value">${s.value}</div></div>`
+      ).join('');
+      showCard('previewCard');
+    }
+
+    // ============================================================
+    // Call API proxy — initial analysis
+    // ============================================================
+    async function analyzeData() {
+      if (state.isAnalyzing) return;
+      state.isAnalyzing = true;
+
+      // Show summary + charts cards in loading state
+      showCard('summaryCard');
+      showCard('chartsCard');
+      $('summaryText').innerHTML = '<span class="typing"><span></span><span></span><span></span></span> Analyzing your data...';
+      $('chartsGrid').innerHTML = '';
+
+      // Reset chat
+      state.chatHistory = [];
+      $('chatWindow').innerHTML = '<div class="chat-empty" id="chatEmpty">Ask a question to start the conversation.</div>';
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'analyze',
+            dataSummary: state.summary,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Analysis failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        renderAnalysis(data);
+        enableChat(data.suggestions || []);
+      } catch (err) {
+        $('summaryText').innerHTML = `<div class="status error">Analysis failed: ${escapeHtml(err.message)}</div>`;
+        $('chartsGrid').innerHTML = '';
+        console.error(err);
+      } finally {
+        state.isAnalyzing = false;
+      }
+    }
+
+    // ============================================================
+    // Render summary + charts
+    // ============================================================
+    function renderAnalysis({ summary, charts }) {
+      $('summaryText').textContent = summary || 'No summary returned.';
+
+      // Destroy old chart instances to avoid memory leaks
+      state.charts.forEach(c => { try { c.destroy(); } catch (e) {} });
+      state.charts = [];
+
+      const grid = $('chartsGrid');
+      grid.innerHTML = '';
+
+      if (!Array.isArray(charts) || charts.length === 0) {
+        grid.innerHTML = '<div class="status info">No charts could be auto-generated for this dataset.</div>';
+        return;
+      }
+
+      charts.forEach((cfg, i) => {
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        const title = cfg.title || `Chart ${i + 1}`;
+        card.innerHTML = `<h3>${escapeHtml(title)}</h3><div class="chart-canvas-wrap"><canvas id="chart-${i}"></canvas></div>`;
+        grid.appendChild(card);
+
+        const canvas = card.querySelector('canvas');
+        try {
+          const chart = buildChart(canvas, cfg);
+          if (chart) state.charts.push(chart);
+        } catch (e) {
+          console.error('Chart render error:', e, cfg);
+          card.querySelector('.chart-canvas-wrap').innerHTML = '<div class="status error">Could not render this chart.</div>';
+        }
+      });
+    }
+
+    function buildChart(canvas, cfg) {
+      const allowed = ['bar', 'line', 'pie', 'doughnut'];
+      const type = allowed.includes(cfg.type) ? cfg.type : 'bar';
+      const palette = ['#5b8cff', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#fb923c', '#f472b6'];
+
+      const datasets = (cfg.datasets || []).map((ds, idx) => {
+        const base = {
+          label: ds.label || '',
+          data: ds.data || [],
+        };
+        if (type === 'pie' || type === 'doughnut') {
+          base.backgroundColor = palette;
+          base.borderColor = '#161e3a';
+          base.borderWidth = 2;
+        } else if (type === 'line') {
+          const c = palette[idx % palette.length];
+          base.borderColor = c;
+          base.backgroundColor = c + '33';
+          base.tension = 0.3;
+          base.fill = true;
+          base.pointRadius = 3;
+        } else { // bar
+          base.backgroundColor = palette[idx % palette.length];
+          base.borderRadius = 6;
+        }
+        return base;
+      });
+
+      return new Chart(canvas, {
+        type,
+        data: {
+          labels: cfg.labels || [],
+          datasets,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: type === 'pie' || type === 'doughnut' || datasets.length > 1,
+              labels: { color: '#9aa6cf', font: { size: 12 } },
+            },
+            tooltip: {
+              backgroundColor: '#0b1020',
+              borderColor: '#25305a',
+              borderWidth: 1,
+              padding: 10,
+            },
+          },
+          scales: (type === 'pie' || type === 'doughnut') ? {} : {
+            x: {
+              ticks: { color: '#9aa6cf', font: { size: 11 } },
+              grid: { color: '#25305a' },
+            },
+            y: {
+              ticks: { color: '#9aa6cf', font: { size: 11 } },
+              grid: { color: '#25305a' },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    // ============================================================
+    // Chat — follow-up Q&A
+    // ============================================================
+    function enableChat(suggestions) {
+      showCard('chatCard');
+      $('chatInput').disabled = false;
+      $('chatSendBtn').disabled = false;
+
+      const sugBox = $('suggestions');
+      if (suggestions && suggestions.length > 0) {
+        sugBox.innerHTML = '<span style="margin-right:6px;">Try:</span>' +
+          suggestions.slice(0, 4).map(s =>
+            `<span class="chip" data-q="${escapeHtml(s)}">${escapeHtml(s)}</span>`
+          ).join('');
+        sugBox.querySelectorAll('.chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            $('chatInput').value = chip.dataset.q;
+            $('chatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+          });
+        });
+      } else {
+        sugBox.innerHTML = '';
+      }
+    }
+
+    function appendMessage(role, content) {
+      const empty = $('chatEmpty');
+      if (empty) empty.remove();
+      const win = $('chatWindow');
+      const wrap = document.createElement('div');
+      wrap.className = `msg ${role}`;
+      wrap.innerHTML = `
+        <div class="msg-avatar">${role === 'user' ? 'You' : 'AI'}</div>
+        <div class="msg-bubble"></div>
+      `;
+      wrap.querySelector('.msg-bubble').textContent = content;
+      win.appendChild(wrap);
+      win.scrollTop = win.scrollHeight;
+      return wrap.querySelector('.msg-bubble');
+    }
+
+    $('chatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (state.isChatting) return;
+      const input = $('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+
+      input.value = '';
+      input.disabled = true;
+      $('chatSendBtn').disabled = true;
+      state.isChatting = true;
+
+      appendMessage('user', message);
+      const thinkingBubble = appendMessage('assistant', '');
+      thinkingBubble.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+
+      try {
+        state.chatHistory.push({ role: 'user', content: message });
+
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'chat',
+            dataSummary: state.summary,
+            history: state.chatHistory,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Request failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        const reply = data.reply || 'No response received.';
+        thinkingBubble.textContent = reply;
+        state.chatHistory.push({ role: 'assistant', content: reply });
+      } catch (err) {
+        thinkingBubble.textContent = `Sorry — ${err.message}`;
+        thinkingBubble.parentElement.style.opacity = '0.7';
+        // remove failed user message from history so retry works
+        state.chatHistory.pop();
+      } finally {
+        input.disabled = false;
+        $('chatSendBtn').disabled = false;
+        state.isChatting = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+order_date,product_name,category,quantity,unit_price,total_revenue,region,customer_type
+2025-01-08,Wireless Earbuds Pro,Electronics,2,89.99,179.98,West,New
+2025-01-12,Cotton T-Shirt,Clothing,3,19.99,59.97,South,Returning
+2025-01-18,Smart Coffee Maker,Home,1,149.00,149.00,North,New
+2025-01-22,Bluetooth Speaker,Electronics,1,79.99,79.99,East,Returning
+2025-01-28,Yoga Mat,Sports,2,34.99,69.98,West,New
+2025-02-03,Wireless Earbuds Pro,Electronics,1,89.99,89.99,South,Returning
+2025-02-09,Linen Curtains,Home,4,42.50,170.00,West,Returning
+2025-02-14,Running Shoes,Sports,1,129.99,129.99,North,New
+2025-02-19,4K Webcam,Electronics,1,159.00,159.00,West,Returning
+2025-02-25,Cotton T-Shirt,Clothing,5,19.99,99.95,East,New
+2025-03-02,Smart Coffee Maker,Home,1,149.00,149.00,South,New
+2025-03-08,Wireless Charger,Electronics,3,29.99,89.97,West,Returning
+2025-03-14,Denim Jeans,Clothing,2,59.99,119.98,North,Returning
+2025-03-20,Stainless Cookware Set,Home,1,289.00,289.00,West,Returning
+2025-03-26,Bluetooth Speaker,Electronics,2,79.99,159.98,East,New
+2025-04-01,Yoga Mat,Sports,1,34.99,34.99,South,New
+2025-04-07,Wireless Earbuds Pro,Electronics,2,89.99,179.98,West,Returning
+2025-04-13,Linen Curtains,Home,2,42.50,85.00,North,New
+2025-04-19,Running Shoes,Sports,2,129.99,259.98,West,Returning
+2025-04-25,Cotton T-Shirt,Clothing,4,19.99,79.96,East,Returning
+2025-05-02,4K Webcam,Electronics,1,159.00,159.00,South,New
+2025-05-08,Smart Coffee Maker,Home,2,149.00,298.00,West,Returning
+2025-05-14,Denim Jeans,Clothing,1,59.99,59.99,North,New
+2025-05-20,Wireless Charger,Electronics,2,29.99,59.98,West,New
+2025-05-26,Stainless Cookware Set,Home,1,289.00,289.00,East,Returning
+2025-06-01,Bluetooth Speaker,Electronics,1,79.99,79.99,South,Returning
+2025-06-07,Yoga Mat,Sports,3,34.99,104.97,West,New
+2025-06-13,Wireless Earbuds Pro,Electronics,1,89.99,89.99,North,New
+2025-06-19,Linen Curtains,Home,3,42.50,127.50,West,Returning
+2025-06-25,Running Shoes,Sports,1,129.99,129.99,East,New
+2025-07-02,Cotton T-Shirt,Clothing,6,19.99,119.94,South,Returning
+2025-07-08,4K Webcam,Electronics,2,159.00,318.00,West,Returning
+2025-07-14,Smart Coffee Maker,Home,1,149.00,149.00,North,Returning
+2025-07-20,Denim Jeans,Clothing,3,59.99,179.97,West,New
+2025-07-26,Wireless Charger,Electronics,4,29.99,119.96,East,Returning
+2025-08-01,Bluetooth Speaker,Electronics,2,79.99,159.98,South,New
+2025-08-07,Stainless Cookware Set,Home,1,289.00,289.00,West,Returning
+2025-08-13,Yoga Mat,Sports,2,34.99,69.98,North,New
+2025-08-19,Wireless Earbuds Pro,Electronics,3,89.99,269.97,West,Returning
+2025-08-25,Linen Curtains,Home,1,42.50,42.50,East,New
+2025-09-01,Running Shoes,Sports,2,129.99,259.98,South,Returning
+2025-09-07,Cotton T-Shirt,Clothing,4,19.99,79.96,West,New
+2025-09-13,4K Webcam,Electronics,1,159.00,159.00,North,Returning
+2025-09-19,Smart Coffee Maker,Home,2,149.00,298.00,West,Returning
+2025-09-25,Denim Jeans,Clothing,2,59.99,119.98,East,New
+2025-10-02,Wireless Charger,Electronics,5,29.99,149.95,South,Returning
+2025-10-08,Bluetooth Speaker,Electronics,3,79.99,239.97,West,New
+2025-10-14,Stainless Cookware Set,Home,2,289.00,578.00,North,Returning
+2025-10-20,Yoga Mat,Sports,1,34.99,34.99,West,Returning
+2025-10-26,Wireless Earbuds Pro,Electronics,4,89.99,359.96,East,New
+2025-11-01,Linen Curtains,Home,2,42.50,85.00,South,New
+2025-11-05,Running Shoes,Sports,3,129.99,389.97,West,Returning
+2025-11-08,Cotton T-Shirt,Clothing,8,19.99,159.92,North,Returning
+2025-11-12,4K Webcam,Electronics,2,159.00,318.00,West,Returning
+2025-11-15,Smart Coffee Maker,Home,3,149.00,447.00,East,New
+2025-11-18,Denim Jeans,Clothing,4,59.99,239.96,South,Returning
+2025-11-22,Wireless Charger,Electronics,6,29.99,179.94,West,New
+2025-11-26,Bluetooth Speaker,Electronics,5,79.99,399.95,North,Returning
+2025-11-28,Stainless Cookware Set,Home,2,289.00,578.00,West,Returning
+2025-11-29,Wireless Earbuds Pro,Electronics,8,89.99,719.92,West,Returning
+2025-11-30,Yoga Mat,Sports,4,34.99,139.96,East,New
+2025-12-02,Linen Curtains,Home,3,42.50,127.50,South,Returning
+2025-12-04,Running Shoes,Sports,5,129.99,649.95,West,Returning
+2025-12-06,Cotton T-Shirt,Clothing,10,19.99,199.90,North,New
+2025-12-08,4K Webcam,Electronics,4,159.00,636.00,West,Returning
+2025-12-10,Smart Coffee Maker,Home,5,149.00,745.00,East,Returning
+2025-12-12,Denim Jeans,Clothing,6,59.99,359.94,South,New
+2025-12-14,Wireless Charger,Electronics,8,29.99,239.92,West,Returning
+2025-12-15,Bluetooth Speaker,Electronics,7,79.99,559.93,North,Returning
+2025-12-16,Stainless Cookware Set,Home,3,289.00,867.00,West,Returning
+2025-12-17,Wireless Earbuds Pro,Electronics,12,89.99,1079.88,West,Returning
+2025-12-18,Yoga Mat,Sports,2,34.99,69.98,East,New
+2025-12-19,Linen Curtains,Home,4,42.50,170.00,South,Returning
+2025-12-20,Running Shoes,Sports,6,129.99,779.94,West,Returning
+2025-12-21,Cotton T-Shirt,Clothing,15,19.99,299.85,North,New
+2025-12-22,4K Webcam,Electronics,3,159.00,477.00,West,Returning
+2025-12-23,Smart Coffee Maker,Home,4,149.00,596.00,East,Returning
+2025-12-24,Denim Jeans,Clothing,8,59.99,479.92,South,New
+2025-12-26,Wireless Charger,Electronics,10,29.99,299.90,West,Returning
+2025-12-28,Bluetooth Speaker,Electronics,6,79.99,479.94,North,Returning
+2025-12-30,Wireless Earbuds Pro,Electronics,9,89.99,809.91,West,Returning
