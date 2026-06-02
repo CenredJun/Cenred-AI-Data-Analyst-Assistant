@@ -139,6 +139,7 @@
       cursor: pointer;
       transition: all 0.2s ease;
       background: rgba(91, 140, 255, 0.03);
+      display: block;
     }
 
     .dropzone:hover, .dropzone.dragover {
@@ -149,9 +150,11 @@
     .dropzone.dragover { transform: scale(1.01); }
 
     .dropzone-icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-      opacity: 0.7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 16px;
+      opacity: 0.8;
     }
 
     .dropzone-title {
@@ -485,7 +488,7 @@
           <div class="brand-sub">AI Data Analyst Assistant</div>
         </div>
       </div>
-      <a class="btn btn-ghost" href="https://cenredai.bizguro.net" target="_blank" rel="noopener">Portfolio</a>
+      <a class="btn btn-ghost" href="https://cenredportfolio.bizguro.net/portfolio/" target="_blank" rel="noopener">Portfolio</a>
     </header>
 
     <section class="hero">
@@ -497,7 +500,13 @@
     <section class="card" id="uploadCard">
       <h2>1. Upload your data</h2>
       <label for="fileInput" class="dropzone" id="dropzone">
-        <div class="dropzone-icon">&#128202;</div>
+        <div class="dropzone-icon">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#5b8cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
         <div class="dropzone-title">Drop a CSV file here</div>
         <div class="dropzone-sub">or click to browse — up to 5MB, .csv format</div>
         <div class="btn-row">
@@ -544,8 +553,8 @@
     </section>
 
     <footer>
-      Built by <a href="https://cenredai.bizguro.net" target="_blank" rel="noopener">Cenred (Cj)</a>
-      &nbsp;&middot;&nbsp; Powered by Claude &nbsp;&middot;&nbsp; <a href="https://github.com" target="_blank" rel="noopener">View source</a>
+      Built by <a href="https://cenredportfolio.bizguro.net/portfolio/" target="_blank" rel="noopener">Cenred (Cj)</a>
+      &nbsp;&middot;&nbsp; Powered by Claude &nbsp;&middot;&nbsp; <a href="https://github.com/CenredJun" target="_blank" rel="noopener">View source</a>
     </footer>
   </div>
 
@@ -561,18 +570,15 @@
 
     // Application state
     const state = {
-      rawData: null,        // full parsed array of objects
-      columns: [],          // column metadata
-      summary: null,        // statistical summary sent to Claude
-      chatHistory: [],      // [{role, content}]
-      charts: [],           // active Chart.js instances
+      rawData: null,
+      columns: [],
+      summary: null,
+      chatHistory: [],
+      charts: [],
       isAnalyzing: false,
       isChatting: false,
     };
 
-    // ============================================================
-    // DOM helpers
-    // ============================================================
     const $ = (id) => document.getElementById(id);
 
     function showCard(id) { $(id).classList.remove('hidden'); }
@@ -593,9 +599,7 @@
         .replace(/'/g, '&#39;');
     }
 
-    // ============================================================
-    // File handling — drag/drop and click
-    // ============================================================
+    // File handling
     const dropzone = $('dropzone');
     const fileInput = $('fileInput');
 
@@ -638,7 +642,6 @@
     });
 
     function handleFile(file) {
-      // Validate type
       const isCsv = file.type === 'text/csv'
         || file.type === 'application/vnd.ms-excel'
         || file.name.toLowerCase().endsWith('.csv');
@@ -646,7 +649,6 @@
         setStatus('Only .csv files are supported. Convert your file to CSV and try again.', 'error');
         return;
       }
-      // Validate size
       if (file.size > MAX_FILE_SIZE) {
         setStatus(`File is ${(file.size / 1024 / 1024).toFixed(1)}MB — max is 5MB.`, 'error');
         return;
@@ -668,24 +670,14 @@
       }
     }
 
-    // ============================================================
-    // CSV parsing — PapaParse
-    // ============================================================
+    // CSV parsing
     function parseCsv(file) {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: 'greedy',
         dynamicTyping: true,
-        worker: false, // keep simple for CDN usage
+        worker: false,
         complete: (results) => {
-          if (results.errors.length > 0) {
-            const firstErr = results.errors[0];
-            // Tolerate non-fatal errors but surface them
-            console.warn('CSV parse warnings:', results.errors);
-            if (firstErr.code === 'TooFewFields' || firstErr.code === 'TooManyFields') {
-              // these are typically non-fatal
-            }
-          }
           if (!results.data || results.data.length === 0) {
             setStatus('The CSV appears to be empty.', 'error');
             return;
@@ -701,9 +693,7 @@
       });
     }
 
-    // ============================================================
-    // Data summarization — extracts metadata for Claude
-    // ============================================================
+    // Data summarization
     function detectColumnType(values) {
       let numericCount = 0, dateCount = 0, totalNonNull = 0;
       const datePattern = /^\d{4}-\d{2}-\d{2}|^\d{1,2}\/\d{1,2}\/\d{2,4}/;
@@ -723,7 +713,6 @@
       const type = detectColumnType(values);
       const nonNull = values.filter(v => v !== null && v !== undefined && v !== '');
       const summary = { name, type, nonNullCount: nonNull.length };
-
       if (type === 'number') {
         const nums = nonNull.filter(v => typeof v === 'number' && !isNaN(v));
         if (nums.length > 0) {
@@ -761,17 +750,10 @@
         return summarizeColumn(name, values);
       });
       const sampleRows = rows.slice(0, MAX_SAMPLE_ROWS);
-      return {
-        rowCount: rows.length,
-        columnCount: fields.length,
-        columns: columnSummaries,
-        sampleRows,
-      };
+      return { rowCount: rows.length, columnCount: fields.length, columns: columnSummaries, sampleRows };
     }
 
-    // ============================================================
-    // Render preview table + stats
-    // ============================================================
+    // Render preview
     function renderPreview(rows, fields) {
       const previewRows = rows.slice(0, 10);
       const table = $('previewTable');
@@ -781,14 +763,12 @@
       ).join('')}</tbody>`;
       table.innerHTML = thead + tbody;
 
-      // Stats grid
       const summary = summarizeData(rows);
       state.summary = summary;
-      const numericCols = summary.columns.filter(c => c.type === 'number').length;
       const stats = [
         { label: 'Rows', value: rows.length.toLocaleString() },
         { label: 'Columns', value: fields.length },
-        { label: 'Numeric', value: numericCols },
+        { label: 'Numeric', value: summary.columns.filter(c => c.type === 'number').length },
         { label: 'Categorical', value: summary.columns.filter(c => c.type === 'string').length },
       ];
       $('statsGrid').innerHTML = stats.map(s =>
@@ -797,20 +777,14 @@
       showCard('previewCard');
     }
 
-    // ============================================================
-    // Call API proxy — initial analysis
-    // ============================================================
+    // Analyze data
     async function analyzeData() {
       if (state.isAnalyzing) return;
       state.isAnalyzing = true;
-
-      // Show summary + charts cards in loading state
       showCard('summaryCard');
       showCard('chartsCard');
       $('summaryText').innerHTML = '<span class="typing"><span></span><span></span><span></span></span> Analyzing your data...';
       $('chartsGrid').innerHTML = '';
-
-      // Reset chat
       state.chatHistory = [];
       $('chatWindow').innerHTML = '<div class="chat-empty" id="chatEmpty">Ask a question to start the conversation.</div>';
 
@@ -818,60 +792,45 @@
         const res = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode: 'analyze',
-            dataSummary: state.summary,
-          }),
+          body: JSON.stringify({ mode: 'analyze', dataSummary: state.summary }),
         });
-
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error || `Analysis failed (${res.status})`);
         }
-
         const data = await res.json();
         renderAnalysis(data);
         enableChat(data.suggestions || []);
       } catch (err) {
         $('summaryText').innerHTML = `<div class="status error">Analysis failed: ${escapeHtml(err.message)}</div>`;
         $('chartsGrid').innerHTML = '';
-        console.error(err);
       } finally {
         state.isAnalyzing = false;
       }
     }
 
-    // ============================================================
-    // Render summary + charts
-    // ============================================================
+    // Render analysis
     function renderAnalysis({ summary, charts }) {
       $('summaryText').textContent = summary || 'No summary returned.';
-
-      // Destroy old chart instances to avoid memory leaks
       state.charts.forEach(c => { try { c.destroy(); } catch (e) {} });
       state.charts = [];
-
       const grid = $('chartsGrid');
       grid.innerHTML = '';
-
       if (!Array.isArray(charts) || charts.length === 0) {
         grid.innerHTML = '<div class="status info">No charts could be auto-generated for this dataset.</div>';
         return;
       }
-
       charts.forEach((cfg, i) => {
         const card = document.createElement('div');
         card.className = 'chart-card';
         const title = cfg.title || `Chart ${i + 1}`;
         card.innerHTML = `<h3>${escapeHtml(title)}</h3><div class="chart-canvas-wrap"><canvas id="chart-${i}"></canvas></div>`;
         grid.appendChild(card);
-
         const canvas = card.querySelector('canvas');
         try {
           const chart = buildChart(canvas, cfg);
           if (chart) state.charts.push(chart);
         } catch (e) {
-          console.error('Chart render error:', e, cfg);
           card.querySelector('.chart-canvas-wrap').innerHTML = '<div class="status error">Could not render this chart.</div>';
         }
       });
@@ -881,12 +840,8 @@
       const allowed = ['bar', 'line', 'pie', 'doughnut'];
       const type = allowed.includes(cfg.type) ? cfg.type : 'bar';
       const palette = ['#5b8cff', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee', '#fb923c', '#f472b6'];
-
       const datasets = (cfg.datasets || []).map((ds, idx) => {
-        const base = {
-          label: ds.label || '',
-          data: ds.data || [],
-        };
+        const base = { label: ds.label || '', data: ds.data || [] };
         if (type === 'pie' || type === 'doughnut') {
           base.backgroundColor = palette;
           base.borderColor = '#161e3a';
@@ -898,19 +853,15 @@
           base.tension = 0.3;
           base.fill = true;
           base.pointRadius = 3;
-        } else { // bar
+        } else {
           base.backgroundColor = palette[idx % palette.length];
           base.borderRadius = 6;
         }
         return base;
       });
-
       return new Chart(canvas, {
         type,
-        data: {
-          labels: cfg.labels || [],
-          datasets,
-        },
+        data: { labels: cfg.labels || [], datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -927,28 +878,18 @@
             },
           },
           scales: (type === 'pie' || type === 'doughnut') ? {} : {
-            x: {
-              ticks: { color: '#9aa6cf', font: { size: 11 } },
-              grid: { color: '#25305a' },
-            },
-            y: {
-              ticks: { color: '#9aa6cf', font: { size: 11 } },
-              grid: { color: '#25305a' },
-              beginAtZero: true,
-            },
+            x: { ticks: { color: '#9aa6cf', font: { size: 11 } }, grid: { color: '#25305a' } },
+            y: { ticks: { color: '#9aa6cf', font: { size: 11 } }, grid: { color: '#25305a' }, beginAtZero: true },
           },
         },
       });
     }
 
-    // ============================================================
-    // Chat — follow-up Q&A
-    // ============================================================
+    // Chat
     function enableChat(suggestions) {
       showCard('chatCard');
       $('chatInput').disabled = false;
       $('chatSendBtn').disabled = false;
-
       const sugBox = $('suggestions');
       if (suggestions && suggestions.length > 0) {
         sugBox.innerHTML = '<span style="margin-right:6px;">Try:</span>' +
@@ -988,34 +929,24 @@
       const input = $('chatInput');
       const message = input.value.trim();
       if (!message) return;
-
       input.value = '';
       input.disabled = true;
       $('chatSendBtn').disabled = true;
       state.isChatting = true;
-
       appendMessage('user', message);
       const thinkingBubble = appendMessage('assistant', '');
       thinkingBubble.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
-
       try {
         state.chatHistory.push({ role: 'user', content: message });
-
         const res = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode: 'chat',
-            dataSummary: state.summary,
-            history: state.chatHistory,
-          }),
+          body: JSON.stringify({ mode: 'chat', dataSummary: state.summary, history: state.chatHistory }),
         });
-
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.error || `Request failed (${res.status})`);
         }
-
         const data = await res.json();
         const reply = data.reply || 'No response received.';
         thinkingBubble.textContent = reply;
@@ -1023,7 +954,6 @@
       } catch (err) {
         thinkingBubble.textContent = `Sorry — ${err.message}`;
         thinkingBubble.parentElement.style.opacity = '0.7';
-        // remove failed user message from history so retry works
         state.chatHistory.pop();
       } finally {
         input.disabled = false;
